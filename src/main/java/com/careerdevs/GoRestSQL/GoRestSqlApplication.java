@@ -8,6 +8,8 @@ import org.springframework.web.bind.annotation.RestController;
 @GetMapping()
 @RestController
 
+
+
 @SpringBootApplication
 public class GoRestSqlApplication {
 
