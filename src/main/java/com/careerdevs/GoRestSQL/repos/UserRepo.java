@@ -1,4 +1,10 @@
 package com.careerdevs.GoRestSQL.repos;
 
-public class UserRepo {
+
+import com.careerdevs.GoRestSQL.models.User;
+import org.springframework.data.repository.CrudRepository;
+
+public interface UserRepo extends CrudRepository<User, Integer>{
+
+
 }
