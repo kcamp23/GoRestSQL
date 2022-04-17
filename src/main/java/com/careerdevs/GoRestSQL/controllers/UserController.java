@@ -1,8 +1,15 @@
 package com.careerdevs.GoRestSQL.controllers;
 
+import com.careerdevs.GoRestSQL.repos.UserRepo;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.InvalidDataAccessApiUsageException;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.HttpClientErrorException;
 
 @RestController
 @RequestMapping("/user")
@@ -20,7 +27,29 @@ public class UserController {
      */
 
    @Autowired
-    
+    private UserRepo userRepo;
+
+   @GetMapping ("/{id}")
+   public ResponseEntity<?> getUserById (@PathVariable ("id") String id){
+      try{
+         if(ApiErrorHandeling.isStrNaN(id)){
+            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, id + "is not a valid ID");
+         }
+         int uID = Integer.parseInt(id);
+         Optional<User> foundUser = userRepo.findById(uID);
+
+         if  (foundUser.isEmpty()){
+            throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "user not found with ID:" + id);
+         }
+
+         return new ResponseEntity<>(foundUser, HttpStatus.OK);
+
+      }catch (HttpClientErrorException e){
+         return ApiErrorHandeling.customApiError(e.getMessage()); e.getStatusCode());
+
+
+      }
+   }
 
 
 }
