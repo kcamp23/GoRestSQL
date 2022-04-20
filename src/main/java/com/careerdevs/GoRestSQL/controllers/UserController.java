@@ -12,6 +12,8 @@ import org.springframework.web.client.HttpClientErrorException;
 
 import java.util.Optional;
 
+import static com.sun.tools.jdi.Packet.uID;
+
 @RestController
 @RequestMapping("/user")
 
@@ -86,7 +88,20 @@ public class UserController {
       @DeleteMapping ("/deleteall")
    public ResponseEntity<?> deleteAllUsers (){
 
-      
+      try{
+         long totalUsers = userRepo.count();
+         userRepo.deleteAll();
+
+         return new ResponseEntity<>("users Deeleted:" + totalUsers, HttpStatus.OK);
+
+      }catch (HttpClientErrorException e){
+         return  ApiErrorHandeling.customApiError(e.getMessage(), e.getStatusCode());
+
+      }catch (Exception e) {
+         return ApiErrorHandeling.genericApiError(e);
+
+      }
       }
 
+      @PostMapping("/upload")
 }
