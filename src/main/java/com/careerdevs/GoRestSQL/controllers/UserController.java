@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.RestTemplate;
 
 import java.util.Optional;
 
@@ -103,5 +104,59 @@ public class UserController {
       }
       }
 
-      @PostMapping("/upload")
+      @PostMapping("/upload/{id}")
+   public ResponseEntity<?> uploadUserById (
+          @PathVariable ("id") String userId,
+          RestTemplate restTemplate
+      ){
+      try{
+         if (ApiErrorHandeling.isStrNaN(userId)){
+            throw new HttpClientErrorException(HttpStatus.BAD_REQUEST, userId + " is not a valid ID");
+
+         }
+         int uID = Integer.parseInt(userId);
+
+         String url  = "https://gorest.co.in/public/v2/users/" + uID;
+         User foundUser = restTemplate.getForObject(url, User.class);
+
+         if(foundUser == null){
+            throw new HttpClientErrorException(HttpStatus.NOT_FOUND, "User data was null");
+
+         }
+         User savedUser = userRepo.save(foundUser);
+         return new ResponseEntity<>(savedUser, HttpStatus.CREATED);
+
+      }catch (HttpClientErrorException e){
+         return ApiErrorHandeling.customApiError(e.getMessage(),e.getStatusCode());
+
+      }catch (Exception e){
+         return ApiErrorHandeling.genericApiError(e);
+
+      }
+      }
+      @PostMapping ("/")
+   public ResponseEntity<?> createNewUSer (@RequestBody User newUser){
+      try{
+         User savedUser = userRepo.save(newUser);
+         return new ResponseEntity<>(savedUser, HttpStatus.CREATED);
+
+
+      }catch (HttpClientErrorException e){
+         return  ApiErrorHandeling.customApiError(e.getMessage(), e.getStatusCode());
+
+      }catch (Exception e){
+         return  ApiErrorHandeling.genericApiError(e);
+      }
+      }
+
+      @PostMapping ("/")
+   public ResponseEntity<?> updateUser (@RequestBody User updateUser);
+
+   try{
+
+      User savedUser = userRepo.save(updateUser);
+
+      return new ResponseEntity<>(savedUser, HttpStatus.OK);
+      
+   }
 }
