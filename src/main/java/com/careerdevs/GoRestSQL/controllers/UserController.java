@@ -149,14 +149,19 @@ public class UserController {
       }
       }
 
-      @PostMapping ("/")
-   public ResponseEntity<?> updateUser (@RequestBody User updateUser);
+      @PutMapping ("/")
+   public ResponseEntity<?> updateUser  (@RequestBody User updateUser){
 
    try{
 
       User savedUser = userRepo.save(updateUser);
 
       return new ResponseEntity<>(savedUser, HttpStatus.OK);
-      
+
+   }catch (HttpClientErrorException e) {
+      return ApiErrorHandeling.customApiError((e.getMessage()), e.getStatusCode());
+   }catch (Exception e){
+      return ApiErrorHandeling.genericApiError(e);
+   }
    }
 }
