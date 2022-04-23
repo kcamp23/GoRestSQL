@@ -5,12 +5,16 @@ import com.careerdevs.GoRestSQL.repos.UserRepo;
 import com.careerdevs.GoRestSQL.util.ApiErrorHandeling;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Objects;
 import java.util.Optional;
 
 import static com.sun.tools.jdi.Packet.uID;
@@ -163,5 +167,52 @@ public class UserController {
    }catch (Exception e){
       return ApiErrorHandeling.genericApiError(e);
    }
+   }
+
+   @PostMapping ("/uploadall")
+
+   public ResponseEntity<?> uploadAll(
+           RestTemplate restTemplate
+   ){
+      try {
+         String url = "Https://gorest.co.in/public/v2/users";
+
+         ResponseEntity<User[]> response = restTemplate.getForEntity(url,User[].class);
+
+         User[] firstPageUsers = response.getBody();
+
+         assert firstPageUsers != null;
+         ArrayList<User> allUsers = new ArrayList<>(Arrays.asList(firstPageUsers));
+         HttpHeaders responseHeaders = response.getHeaders();
+
+         String totalPages = Objects.requireNonNull(responseHeaders.get("x- Pagination-Pages")).get(0);
+         int totalPhNum = Integer.parseInt(totalPages);
+
+         for ( int i = 2; i<= totalPhNum; i++){
+            String pageUrl = url + "?pagws=" + i;
+            User[] pageUsers = restTemplate.getForObject(pageUrl,User[].class);
+
+            assert pageUsers != null;
+            allUsers.addAll(Arrays.asList(firstPageUsers));
+
+
+         }
+         //upload all users to SQL here
+         userRepo.saveAll(allUsers);
+
+         return new ResponseEntity<>(+ allUsers.size(),HttpStatus.OK);
+
+      }catch  (Exception e){
+         System.out.println(e.getClass());
+         System.out.println(e.getMessage());
+         return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+
+      }
+   }
+   @GetMapping ("/all")
+   public ResponseEntity<?> getAllUser(){
+      try{
+
+      }
    }
 }
